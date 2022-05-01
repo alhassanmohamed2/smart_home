@@ -59,11 +59,10 @@ void setup() {
 }
 
 void loop() {
-
   key_pad();
  temp();
 sound();
-//  fire();
+ fire();
 
 }
 
@@ -106,10 +105,19 @@ lamps += 1;
 else if (lamps > 0 && lamps < 2)
 {
 digitalWrite(relay2,HIGH);
+digitalWrite(relay1,LOW);
   lamps += 1;
-}else if (lamps == 2){digitalWrite(relay1,LOW);
+}else if (lamps > 0 && lamps < 3)
+{
+digitalWrite(relay1,HIGH);
+digitalWrite(relay2,HIGH);
+
+  lamps += 1;
+}else if (lamps == 3){
+  digitalWrite(relay1,LOW);
  digitalWrite(relay2,LOW);
- lamps = 0;}
+ lamps = 0;
+ }
 }
 clap = 0;
 }
@@ -125,6 +133,7 @@ void temp() {
 
 
   }
+  Serial.println(t);
   if (t > 25) {
     digitalWrite(fan, HIGH);
   } else {
