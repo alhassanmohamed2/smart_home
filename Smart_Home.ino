@@ -49,20 +49,18 @@ void setup() {
   pinMode(servo_motor, OUTPUT);
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
-  
   myservo.attach(servo_motor);
+  myservo.write(0);
   dht.begin();
-  Serial.begin(9600);
   input_password.reserve(32);
-
 
 }
 
 void loop() {
-  key_pad();
- temp();
+key_pad();
+temp();
 sound();
- fire();
+fire();
 
 }
 
@@ -124,16 +122,7 @@ clap = 0;
 }
 
 void temp() {
-
-
   float t = dht.readTemperature();
-  if ( isnan(t)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    return;
-
-
-  }
-  Serial.println(t);
   if (t > 25) {
     digitalWrite(fan, HIGH);
   } else {
@@ -145,9 +134,7 @@ void temp() {
 
 void key_pad() {
   char key = keypad.getKey();
-
   if (key) {
-    Serial.println(key);
     tone(buzzer,350);
     delay(500);
     noTone(buzzer);
@@ -155,26 +142,37 @@ void key_pad() {
       input_password = "";
     } else if (key == '#') {
       if (password == input_password) {
-        Serial.println("password is correct");
         input_password = "";
-        if (on == false) {
-          on = true;
-          
-          for (pos = 0; pos <= 180; pos += 1) {
-            myservo.write(pos);
-            delay(15);
-          }
-        }
-        else if (on == true) {
-          on = false;
-                    
 
-          for (pos = 180; pos >= 0; pos -= 1) {
+  for (pos = 0; pos <= 130; pos += 1) {
+            myservo.write(pos);
+           delay(15);
+        }      
+delay(3000);
+for (pos = 130; pos >= 0; pos -= 1) {
             myservo.write(pos);
             delay(15);
           }
 
-        }
+        
+//        if (on == false) {
+//          on = true;
+//          
+//          for (pos = 0; pos <= 130; pos += 1) {
+//            myservo.write(pos);
+//            delay(15);
+//          }
+//        }
+//        else if (on == true) {
+//          on = false;
+//                    
+//
+//          for (pos = 130; pos >= 0; pos -= 1) {
+//            myservo.write(pos);
+//            delay(15);
+//          }
+//
+//        }
 
       } else {
         tone(buzzer, 350);
