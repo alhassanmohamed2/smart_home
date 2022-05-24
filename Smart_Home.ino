@@ -1,6 +1,7 @@
 #include "DHT.h"
 #include <Servo.h>
 #include <Keypad.h>
+#include <EEPROM.h>
 
 #define DHTTYPE DHT11
 #define DHTPIN A2
@@ -18,7 +19,9 @@ int clap = 0;
 long detection_range_start = 0;
 long detection_range = 0;
 
-
+bool temp_change;
+int temp_limit;
+String temp_get;
 bool on = false;
 int pos = 0;
 int lamps = 0;
@@ -40,7 +43,8 @@ const String password = "1237";
 String input_password;
 
 void setup() {
-  
+  Serial.begin(9600);
+  temp_limit = EEPROM.read(0);
   pinMode(DHTPIN, INPUT);
   pinMode(sound_sensor, INPUT);
   pinMode(fire_sensor, INPUT);
@@ -123,7 +127,7 @@ clap = 0;
 
 void temp() {
   float t = dht.readTemperature();
-  if (t > 25) {
+  if (t > temp_limit) {
     digitalWrite(fan, HIGH);
   } else {
     digitalWrite(fan, LOW);
@@ -135,12 +139,11 @@ void temp() {
 void key_pad() {
   char key = keypad.getKey();
   if (key) {
+    update_temp(key);
     tone(buzzer,350);
     delay(500);
     noTone(buzzer);
-    if (key == '*') {
-      input_password = "";
-    } else if (key == '#') {
+ if (key == '#') {
       if (password == input_password) {
         input_password = "";
 
@@ -154,35 +157,34 @@ for (pos = 130; pos >= 0; pos -= 1) {
             delay(15);
           }
 
-        
-//        if (on == false) {
-//          on = true;
-//          
-//          for (pos = 0; pos <= 130; pos += 1) {
-//            myservo.write(pos);
-//            delay(15);
-//          }
-//        }
-//        else if (on == true) {
-//          on = false;
-//                    
-//
-//          for (pos = 130; pos >= 0; pos -= 1) {
-//            myservo.write(pos);
-//            delay(15);
-//          }
-//
-//        }
 
       } else {
         tone(buzzer, 350);
-        delay(2000);
+       delay(2000);
         noTone(buzzer);
-      }
+     }
 
-      input_password = "";
-    } else {
+     input_password = "";
+   } else {
       input_password += key;
     }
   }
 }
+
+
+void update_temp(char key){
+     if (key == '*') {
+      temp_get = "" ;
+      temp_change = true;
+
+    }else if (temp_change && key){
+      if(key == '#'){
+        EEPROM.update(0, temp_get.toInt());
+      temp_limit = EEPROM.read(0);
+      temp_change = false;
+        }
+      else if(temp_get.toInt() < 100 && key != '#' && key != '*'){
+         temp_get += key;
+        } 
+      }  
+  }
