@@ -22,7 +22,6 @@ long detection_range = 0;
 bool temp_change;
 int temp_limit;
 String temp_get;
-bool on = false;
 int pos = 0;
 int lamps = 0;
 int i = 0;
@@ -39,12 +38,15 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 byte pin_rows[ROW_NUM] = {2,3,4,5};
 byte pin_column[COLUMN_NUM] = {6,7,8};
 Keypad keypad = Keypad( makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM );
-const String password = "1237";
+String password;
 String input_password;
+int change_pass = 0;
+String new_pass;
 
 void setup() {
-  Serial.begin(9600);
+ 
   temp_limit = EEPROM.read(0);
+  password = readStringFromEEPROM(1);
   pinMode(DHTPIN, INPUT);
   pinMode(sound_sensor, INPUT);
   pinMode(fire_sensor, INPUT);
@@ -65,7 +67,6 @@ key_pad();
 temp();
 sound();
 fire();
-
 }
 
 
@@ -139,11 +140,20 @@ void temp() {
 void key_pad() {
   char key = keypad.getKey();
   if (key) {
-    update_temp(key);
     tone(buzzer,350);
     delay(500);
     noTone(buzzer);
- if (key == '#') {
+    if(change_pass < 2){
+      update_temp(key);
+      }
+    if(change_pass == 2){
+       temp_change = false;
+      change_pass_fun(key);
+      }
+      
+    
+    
+ else if (key == '#') {
       if (password == input_password) {
         input_password = "";
 
@@ -174,17 +184,56 @@ for (pos = 130; pos >= 0; pos -= 1) {
 
 void update_temp(char key){
      if (key == '*') {
+      change_pass += 1;
       temp_get = "" ;
       temp_change = true;
 
     }else if (temp_change && key){
       if(key == '#'){
+        change_pass = 0;
         EEPROM.update(0, temp_get.toInt());
       temp_limit = EEPROM.read(0);
       temp_change = false;
+      input_password = "";
         }
       else if(temp_get.toInt() < 100 && key != '#' && key != '*'){
          temp_get += key;
         } 
       }  
   }
+
+
+void change_pass_fun(char key){
+    if(key == '#' && new_pass != ""){
+      writeStringToEEPROM(1,new_pass);
+      password = new_pass;
+      change_pass = 0;
+      new_pass = "";
+      }else if (key != '#' && key != '*'){
+    new_pass += key;
+      }
+  
+  }
+
+
+// String Write & Read to & from EEPROM
+ void writeStringToEEPROM(int addrOffset, const String &strToWrite)
+{
+  byte len = strToWrite.length();
+  EEPROM.update(addrOffset, len);
+  for (int i = 0; i < len; i++)
+  {
+    EEPROM.update(addrOffset + 1 + i, strToWrite[i]);
+  }
+}
+String readStringFromEEPROM(int addrOffset)
+{
+  int newStrLen = EEPROM.read(addrOffset);
+  char data[newStrLen + 1];
+  for (int i = 0; i < newStrLen; i++)
+  {
+    data[i] = EEPROM.read(addrOffset + 1 + i);
+  }
+  data[newStrLen] = '\0';
+  return String(data);
+}
