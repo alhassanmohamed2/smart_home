@@ -8,10 +8,10 @@
 #define sound_sensor A0
 #define fire_sensor A1
 #define buzzer 10
-#define relay1 11
+#define relay1 13
 #define relay2 12
 #define servo_motor 9
-#define fan 13 
+#define fan 11 
 DHT dht(DHTPIN, DHTTYPE);
 Servo myservo;
 
@@ -129,9 +129,9 @@ clap = 0;
 void temp() {
   float t = dht.readTemperature();
   if (t > temp_limit) {
-    digitalWrite(fan, HIGH);
+    analogWrite(fan, 255);
   } else {
-    digitalWrite(fan, LOW);
+    analogWrite(fan, 0);
   }
 }
 
