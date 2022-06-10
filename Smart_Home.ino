@@ -15,6 +15,8 @@
 DHT dht(DHTPIN, DHTTYPE);
 Servo myservo;
 
+
+bool password_true = false;
 int clap = 0;
 long detection_range_start = 0;
 long detection_range = 0;
@@ -158,12 +160,10 @@ void key_pad() {
     if (change_pass < 2) {
       update_temp(key);
     }
-    if (change_pass == 2) {
+     if (change_pass == 2) {
       temp_change = false;
       change_pass_fun(key);
     }
-
-
 
     else if (key == '#') {
       if (password == input_password) {
@@ -216,7 +216,25 @@ void update_temp(char key) {
 
 
 void change_pass_fun(char key) {
+  if(!password_true){
+  if (key != '#' && key != '*') {
+    input_password += key;
+  }else if(key == '#'){
+    if(input_password == password){
+      input_password = "";
+      tone(buzzer, 350, 500);
+      password_true = true;
+      }else {
+          change_pass = 0;
+         tone(buzzer, 350);
+        delay(2000);
+        noTone(buzzer);
+        }
+    
+    }
+    }else if (password_true){
   if (key == '#' && new_pass != "") {
+    password_true = false;
     writeStringToEEPROM(1, new_pass);
     password = new_pass;
     change_pass = 0;
@@ -224,7 +242,7 @@ void change_pass_fun(char key) {
   } else if (key != '#' && key != '*') {
     new_pass += key;
   }
-
+    }
 }
 
 
