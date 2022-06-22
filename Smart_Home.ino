@@ -15,6 +15,9 @@
 DHT dht(DHTPIN, DHTTYPE);
 Servo myservo;
 
+String readStringFromEEPROM(int);
+void writeStringToEEPROM(int , const String&);
+
 
 bool password_true = false;
 int clap = 0;
@@ -44,6 +47,7 @@ String password;
 String input_password;
 int change_pass = 0;
 String new_pass;
+String check_pass;
 
 void setup() {
   temp_limit = EEPROM.read(0);
@@ -157,15 +161,21 @@ void key_pad() {
     tone(buzzer, 350);
     delay(500);
     noTone(buzzer);
-    if (change_pass < 2) {
+     if (key == '*') {
+    change_pass += 1;
+    temp_get = "" ;
+    temp_change = true;
+
+  }
+    if (change_pass == 1) {
       update_temp(key);
     }
-     if (change_pass == 2) {
+     else if (change_pass == 2) {
       temp_change = false;
       change_pass_fun(key);
     }
 
-    else if (key == '#') {
+    else if (key == '#' && change_pass == 0) {
       if (password == input_password) {
         input_password = "";
 
@@ -187,7 +197,7 @@ void key_pad() {
       }
 
       input_password = "";
-    } else {
+    } else if (key != '#' || key != '*' && change_pass == 0) {
       input_password += key;
     }
   }
@@ -195,20 +205,22 @@ void key_pad() {
 
 
 void update_temp(char key) {
-  if (key == '*') {
-    change_pass += 1;
-    temp_get = "" ;
-    temp_change = true;
-
-  } else if (temp_change && key) {
+   if (temp_change && key) {
     if (key == '#') {
       change_pass = 0;
-      EEPROM.update(0, temp_get.toInt());
+      if(temp_get.toInt() == 0 || temp_get.toInt() > 100){
+        temp_limit = temp_get.toInt();
+        temp_change = false;
+      
+        }else{
+          EEPROM.update(0, temp_get.toInt());
       temp_limit = EEPROM.read(0);
       temp_change = false;
       input_password = "";
+          }
+      
     }
-    else if (temp_get.toInt() < 100 && key != '#' && key != '*') {
+    else if (key != '#' && key != '*') {
       temp_get += key;
     }
   }
@@ -216,35 +228,31 @@ void update_temp(char key) {
 
 
 void change_pass_fun(char key) {
+
   if(!password_true){
-  if (key != '#' && key != '*') {
-    input_password += key;
-  }else if(key == '#'){
-    if(input_password == password){
-      input_password = "";
-      tone(buzzer, 350, 500);
-      password_true = true;
-      }else {
-          change_pass = 0;
-         tone(buzzer, 350);
-        delay(2000);
-        noTone(buzzer);
-        }
-    
+   if (key == '#') {
+    change_pass = 0;
+    if (check_pass == password){
+    password_true = true;
+    check_pass = "";
     }
-    }else if (password_true){
+  } else if (key != '#' && key != '*') {
+    check_pass += key;
+  }
+    }else {
   if (key == '#' && new_pass != "") {
-    password_true = false;
     writeStringToEEPROM(1, new_pass);
     password = new_pass;
     change_pass = 0;
     new_pass = "";
+    password_true = false;
+    
   } else if (key != '#' && key != '*') {
     new_pass += key;
   }
     }
-}
 
+}
 
 // String Write & Read to & from EEPROM
 void writeStringToEEPROM(int addrOffset, const String &strToWrite)
