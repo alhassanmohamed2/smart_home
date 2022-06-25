@@ -191,9 +191,7 @@ void key_pad() {
 
 
       } else {
-        tone(buzzer, 350);
-        delay(2000);
-        noTone(buzzer);
+        alert_sound();
       }
 
       input_password = "";
@@ -217,6 +215,7 @@ void update_temp(char key) {
       temp_limit = EEPROM.read(0);
       temp_change = false;
       input_password = "";
+      success_sound();
           }
       
     }
@@ -235,7 +234,11 @@ void change_pass_fun(char key) {
     if (check_pass == password){
     password_true = true;
     check_pass = "";
-    }
+     success_sound();
+    }else {
+      check_pass = "";
+      alert_sound();
+        }
   } else if (key != '#' && key != '*') {
     check_pass += key;
   }
@@ -246,7 +249,7 @@ void change_pass_fun(char key) {
     change_pass = 0;
     new_pass = "";
     password_true = false;
-    
+    success_sound();
   } else if (key != '#' && key != '*') {
     new_pass += key;
   }
@@ -254,6 +257,18 @@ void change_pass_fun(char key) {
 
 }
 
+void alert_sound(){
+  tone(buzzer, 350);
+        delay(2000);
+        noTone(buzzer);
+  }
+void success_sound(){
+  tone(buzzer, 550);
+     delay(500);
+     tone(buzzer, 650);
+     delay(500);
+     noTone(buzzer);
+  }
 // String Write & Read to & from EEPROM
 void writeStringToEEPROM(int addrOffset, const String &strToWrite)
 {
