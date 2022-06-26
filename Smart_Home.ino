@@ -61,7 +61,7 @@ void setup() {
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
   myservo.attach(servo_motor);
-  myservo.write(0);
+  myservo.write(30);
   dht.begin();
   input_password.reserve(32);
 
@@ -179,12 +179,12 @@ void key_pad() {
       if (password == input_password) {
         input_password = "";
 
-        for (pos = 0; pos <= 130; pos += 1) {
+        for (pos = 30; pos <= 140; pos += 1) {
           myservo.write(pos);
           delay(15);
         }
         delay(3000);
-        for (pos = 130; pos >= 0; pos -= 1) {
+        for (pos = 140; pos >= 30; pos -= 1) {
           myservo.write(pos);
           delay(15);
         }
